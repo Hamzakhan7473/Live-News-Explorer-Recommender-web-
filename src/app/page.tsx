@@ -5,7 +5,15 @@ import { NewsCard } from '@/components/NewsCard';
 import { RankingControls } from '@/components/RankingControls';
 import { TransparencyPanel } from '@/components/TransparencyPanel';
 import { DownloadLogs } from '@/components/DownloadLogs';
-import { Loader2, Settings, Info } from 'lucide-react';
+import { Loader2, Settings, Info, Sparkles } from 'lucide-react';
+import { generateMockRankingData, MockRankingData } from '@/lib/mock-data';
+import { AnimatedBackground } from '@/components/AnimatedBackground';
+import { AIGraphics, MLVisualization } from '@/components/AIGraphics';
+import { JournalismAnimations, NewsTicker, TypewriterEffect } from '@/components/JournalismAnimations';
+import { FirstTimeVisitorAnimation, WelcomeAnimation, ScrollRevealAnimation } from '@/components/FirstTimeVisitorAnimation';
+import { PageTransition, StaggeredReveal, FadeInUp, ScaleIn } from '@/components/PageTransition';
+import { HeroAnimation, FloatingElements, PulseAnimation } from '@/components/HeroAnimation';
+import { motion } from 'framer-motion';
 
 interface Article {
   article: {
@@ -64,20 +72,15 @@ export default function Home() {
     setError(null);
 
     try {
-      const params = new URLSearchParams({
-        userId,
-        ...(preferences || {}),
-      });
-
-      const response = await fetch(`/api/articles?${params}`);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 800));
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch articles');
-      }
-
-      const data = await response.json();
-      setArticles(data.articles);
-      setRankingData(data);
+      // Use mock data for now
+      const mockPreferences = preferences || { diversity: 0.5, novelty: 0.5, freshness: 0.5 };
+      const mockData = generateMockRankingData(mockPreferences);
+      
+      setArticles(mockData.articles);
+      setRankingData(mockData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -86,24 +89,13 @@ export default function Home() {
   };
 
   const handlePreferencesChange = async (preferences: { diversity: number; novelty: number; freshness: number }) => {
-    // Update preferences in backend
-    await fetch('/api/preferences', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, preferences }),
-    });
-
-    // Refetch articles with new preferences
+    // For now, just refetch with new preferences (mock data)
     await fetchArticles(preferences);
   };
 
   const handleArticleClick = async (articleId: string) => {
-    // Record feedback (positive - user clicked)
-    await fetch('/api/feedback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, articleId, feedback: 1.0 }),
-    });
+    // For now, just log the click (mock feedback)
+    console.log(`User clicked article: ${articleId}`);
   };
 
   useEffect(() => {
@@ -111,45 +103,165 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-white relative overflow-hidden">
+      {/* Animated Background */}
+      <AnimatedBackground />
+      
+      {/* Navigation */}
+      <motion.nav 
+        className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-gray-100"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+      >
+        <div className="max-w-7xl mx-auto px-8 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Live News Explorer</h1>
-              <p className="text-sm text-gray-600">Personalized news with transparent ranking</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
+            <motion.div
+              initial={{ x: -50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <h1 className="text-lg font-light text-gray-900">
+                Live News Explorer
+              </h1>
+            </motion.div>
+            
+            <motion.div 
+              className="flex items-center space-x-12"
+              initial={{ x: 50, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              <motion.button
                 onClick={() => setShowTransparency(!showTransparency)}
-                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-sm font-light text-gray-600 hover:text-gray-900 transition-colors relative group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Info className="w-4 h-4" />
-                <span>Why you're seeing this</span>
-              </button>
-              <button
+                Transparency
+                <motion.div
+                  className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 group-hover:w-full transition-all duration-300"
+                  initial={false}
+                />
+              </motion.button>
+              <motion.button
                 onClick={() => setShowControls(!showControls)}
-                className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                className="text-sm font-light text-gray-600 hover:text-gray-900 transition-colors relative group"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Settings className="w-4 h-4" />
-                <span>Ranking Controls</span>
-              </button>
+                Controls
+                <motion.div
+                  className="absolute -bottom-1 left-0 w-0 h-px bg-gray-900 group-hover:w-full transition-all duration-300"
+                  initial={false}
+                />
+              </motion.button>
               <DownloadLogs userId={userId} />
-            </div>
+            </motion.div>
           </div>
         </div>
-      </header>
+      </motion.nav>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Main Content */}
-          <div className="lg:col-span-3">
+      {/* Hero Section */}
+      <motion.section 
+        className="pt-40 pb-24 px-6 relative"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.6 }}
+      >
+        {/* Journalism Animations Background */}
+        <div className="absolute inset-0 opacity-20">
+          <JournalismAnimations />
+        </div>
+        
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          <motion.h1 
+            className="text-6xl md:text-8xl lg:text-9xl font-light text-gray-900 mb-12 leading-none"
+            initial={{ y: 60, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 1, delay: 0.8, ease: "easeOut" }}
+          >
+            <span className="block">News,</span>
+            <span className="block text-gray-400 font-extralight">reimagined</span>
+          </motion.h1>
+          
+          <motion.div
+            className="max-w-2xl mx-auto mb-16"
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8, delay: 1.2 }}
+          >
+            <p className="text-xl text-gray-600 font-light leading-relaxed mb-6">
+              Personalized news with transparent AI ranking.
+            </p>
+            <p className="text-lg text-gray-500 font-light">
+              See why you're seeing what you're seeing.
+            </p>
+          </motion.div>
+          
+          {/* CTA Button */}
+          <motion.div
+            initial={{ y: 30, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1.6 }}
+          >
+            <motion.button
+              className="group relative px-8 py-4 bg-gray-900 text-white text-sm font-light rounded-full hover:bg-gray-800 transition-all duration-300"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="relative z-10">Explore News</span>
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                initial={false}
+              />
+            </motion.button>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* News Ticker */}
+      <motion.div
+        initial={{ y: 50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.8, delay: 2 }}
+      >
+        <NewsTicker />
+      </motion.div>
+
+      {/* Main Content */}
+      <motion.div 
+        className="max-w-7xl mx-auto px-8 pb-24 relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 1.4 }}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-16">
+          {/* Articles */}
+          <motion.div 
+            className="lg:col-span-3"
+            initial={{ x: -50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1.6 }}
+          >
             {loading && (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-                <span className="ml-2 text-gray-600">Loading personalized news...</span>
-              </div>
+              <motion.div 
+                className="flex items-center justify-center py-24"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <div className="text-center">
+                  <motion.div
+                    className="w-8 h-8 border-2 border-gray-300 border-t-gray-900 rounded-full mx-auto mb-4"
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  />
+                  <p className="text-sm font-light text-gray-500">
+                    Curating your personalized news...
+                  </p>
+                </div>
+              </motion.div>
             )}
 
             {error && (
@@ -171,45 +283,82 @@ export default function Home() {
             )}
 
             {!loading && !error && articles.length > 0 && (
-              <div className="space-y-6">
+              <motion.div 
+                className="space-y-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6 }}
+              >
                 {articles.map((item, index) => (
-                  <NewsCard
+                  <motion.div
                     key={item.article.id}
-                    article={item.article}
-                    rank={index + 1}
-                    originalRank={item.original_rank}
-                    scores={{
-                      diversity: item.diversity_score,
-                      novelty: item.novelty_score,
-                      freshness: item.freshness_score,
-                      final: item.final_score,
-                    }}
-                    onClick={() => handleArticleClick(item.article.id)}
-                  />
+                    initial={{ y: 50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                  >
+                    <NewsCard
+                      article={item.article}
+                      rank={index + 1}
+                      originalRank={item.original_rank}
+                      scores={{
+                        diversity: item.diversity_score,
+                        novelty: item.novelty_score,
+                        freshness: item.freshness_score,
+                        final: item.final_score,
+                      }}
+                      onClick={() => handleArticleClick(item.article.id)}
+                    />
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <motion.div 
+            className="space-y-8"
+            initial={{ x: 50, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 1.8 }}
+          >
             {showControls && (
-              <RankingControls
-                preferences={rankingData?.userPreferences || { diversity: 0.5, novelty: 0.5, freshness: 0.5 }}
-                onPreferencesChange={handlePreferencesChange}
-              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <RankingControls
+                  preferences={rankingData?.userPreferences || { diversity: 0.5, novelty: 0.5, freshness: 0.5 }}
+                  onPreferencesChange={handlePreferencesChange}
+                />
+              </motion.div>
             )}
 
             {showTransparency && rankingData && (
-              <TransparencyPanel
-                explanation={rankingData.explanation}
-                scores={rankingData.scores}
-                preferences={rankingData.userPreferences}
-              />
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <TransparencyPanel
+                  explanation={rankingData.explanation}
+                  scores={rankingData.scores}
+                  preferences={rankingData.userPreferences}
+                />
+              </motion.div>
             )}
-          </div>
+
+            {/* AI Visualization */}
+            <motion.div
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.6, delay: 2 }}
+            >
+              <MLVisualization />
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { formatDistanceToNow } from 'date-fns';
-import { ExternalLink, TrendingUp, TrendingDown, Eye } from 'lucide-react';
+import { ExternalLink, TrendingUp, TrendingDown, Eye, Sparkles, Zap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Article {
   id: string;
@@ -68,94 +69,126 @@ export function NewsCard({ article, rank, originalRank, scores, onClick }: NewsC
   };
 
   return (
-    <article className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-sm font-medium text-gray-600">
-              {rank}
-            </div>
-            <div className="flex items-center space-x-2">
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSectionColor(article.section)}`}>
+    <motion.article 
+      className="group cursor-pointer"
+      whileHover={{ y: -8 }}
+      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    >
+      <div className="relative">
+        {/* Rank Badge */}
+        <motion.div 
+          className="absolute -left-4 -top-4 z-10"
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          transition={{ type: "spring", stiffness: 400 }}
+        >
+          <div className="w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center text-sm font-light text-gray-600 shadow-sm">
+            {rank}
+          </div>
+        </motion.div>
+
+        {/* Main Card */}
+        <div className="bg-white border border-gray-100 rounded-3xl p-10 hover-lift group-hover:border-gray-200 transition-all duration-700">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center space-x-3">
+              <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-light rounded-full">
                 {article.section}
               </span>
               {rankChange !== 0 && (
-                <div className="flex items-center space-x-1 text-xs">
+                <div className="flex items-center space-x-1 text-xs text-gray-500">
                   {rankChange > 0 ? (
                     <>
-                      <TrendingUp className="w-3 h-3 text-green-500" />
-                      <span className="text-green-600">+{rankChange}</span>
+                      <TrendingUp className="w-3 h-3" />
+                      <span>+{rankChange}</span>
                     </>
                   ) : (
                     <>
-                      <TrendingDown className="w-3 h-3 text-red-500" />
-                      <span className="text-red-600">{rankChange}</span>
+                      <TrendingDown className="w-3 h-3" />
+                      <span>{rankChange}</span>
                     </>
                   )}
                 </div>
               )}
             </div>
+            <div className="text-xs text-gray-400 font-light">
+              {formatDate(article.published_date)}
+            </div>
           </div>
-          <div className="text-xs text-gray-500">
-            {formatDate(article.published_date)}
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <h2 className="text-xl font-semibold text-gray-900 mb-2 leading-tight">
+          {/* Content */}
+          <div className="space-y-6">
+            <motion.h2 
+              className="text-3xl font-light text-gray-900 leading-tight group-hover:text-gray-700 transition-colors duration-500"
+              whileHover={{ x: 6 }}
+            >
               {article.title}
-            </h2>
-            <p className="text-gray-600 mb-4 leading-relaxed">
+            </motion.h2>
+            
+            <p className="text-lg text-gray-600 font-light leading-relaxed">
               {article.abstract}
             </p>
+            
             {article.byline && (
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-gray-400 font-light">
                 By {article.byline}
               </p>
             )}
           </div>
 
           {imageUrl && (
-            <div className="md:col-span-1">
-              <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
+            <motion.div 
+              className="mt-8"
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 300 }}
+            >
+              <div className="relative aspect-video bg-gray-50 rounded-2xl overflow-hidden">
                 <img
                   src={`https://static01.nyt.com/${imageUrl}`}
                   alt={article.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   loading="lazy"
                 />
               </div>
-            </div>
+            </motion.div>
           )}
-        </div>
 
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-4 text-xs text-gray-500">
-            <div className="flex items-center space-x-1">
-              <Eye className="w-3 h-3" />
-              <span>Diversity: {(scores.diversity * 100).toFixed(0)}%</span>
+          {/* Footer */}
+          <div className="flex items-center justify-between mt-10 pt-8 border-t border-gray-100">
+            <div className="flex items-center space-x-8 text-xs text-gray-400">
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span className="font-light">Diversity {(scores.diversity * 100).toFixed(0)}%</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
+                <span className="font-light">Novelty {(scores.novelty * 100).toFixed(0)}%</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
+                <span className="font-light">Freshness {(scores.freshness * 100).toFixed(0)}%</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-1">
-              <span>Novelty: {(scores.novelty * 100).toFixed(0)}%</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <span>Freshness: {(scores.freshness * 100).toFixed(0)}%</span>
-            </div>
+            
+            <motion.a
+              href={article.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={onClick}
+              className="inline-flex items-center space-x-3 text-sm text-gray-600 hover:text-gray-900 transition-colors group/link"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="font-light">Read article</span>
+              <motion.div
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <ExternalLink className="w-4 h-4 group-hover/link:rotate-12 transition-transform duration-300" />
+              </motion.div>
+            </motion.a>
           </div>
-          
-          <a
-            href={article.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={onClick}
-            className="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-800 transition-colors"
-          >
-            <span>Read full article</span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 }
